@@ -1,5 +1,6 @@
 # === RMF 데모 워크스페이스 (재clone 가능한 외부 소스 + 빌드물, 추적 X) ===
 rmf_demos_ws/
+rmf_ws/
 
 # === colcon / ROS 2 빌드 산출물 (재생성 가능, 커밋 X) ===
 build/
