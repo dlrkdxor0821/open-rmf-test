@@ -9,8 +9,7 @@ Open-RMF(Robotics Middleware Framework) 연습용 저장소.
 - Gazebo (gz)
 
 ## 이 repo에 뭐가 들어있나
-- 이 README (셋업/실행 방법)
-- [`트러블슈팅.md`](./트러블슈팅.md) — 실행 중 겪은 문제와 해결법
+- 이 README (셋업/실행/패키지 구조)
 - `.gitignore`
 - ⚠️ `rmf_ws/` 는 **git에 안 올라감** (`.gitignore` 처리됨).
   남의 레포(rmf_demos)를 받아온 외부 소스 + colcon 빌드 산출물이라 재생성 가능 → 추적 안 함.
@@ -58,7 +57,7 @@ cd ..
 
 ### 1-5. 로봇 모델 경로 패치 (⚠️ 필수 — 안 하면 Gazebo가 바로 꺼짐)
 월드 파일은 로봇을 `model://Open-RMF/TinyRobot`로 찾는데, 로컬 모델엔 `Open-RMF/` 접두사가
-없어서 못 찾는다. `~/.gazebo/models/Open-RMF/` 아래로 링크해두면 해결됨 (자세한 이유는 [`트러블슈팅.md`](./트러블슈팅.md) ①번).
+없어서 못 찾는다. `~/.gazebo/models/Open-RMF/` 아래로 링크해두면 해결됨 (오피스 런처가 `~/.gazebo/models`를 리소스 경로에 자동 추가하므로).
 ```bash
 mkdir -p ~/.gazebo/models/Open-RMF
 for m in ~/open-rmf-test/rmf_ws/src/rmf_demos/rmf_demos_assets/models/*; do
@@ -76,7 +75,7 @@ ros2 launch rmf_demos_gz office.launch.xml
 Gazebo에 오피스 맵 + 로봇, RViz 시각화가 같이 뜸. (첫 실행은 에셋 다운로드로 느릴 수 있음)
 
 > 참고: `server_uri:=ws://localhost:7878` 인자는 **붙이지 말 것.** rmf-web 대시보드용인데
-> 대시보드를 안 띄우면 접속 에러만 남긴다 ([`트러블슈팅.md`](./트러블슈팅.md) ②번 참고).
+> 대시보드를 안 띄우면 접속 에러만 남긴다 (데모 동작엔 무관한 무해한 에러).
 
 ## 3. 로봇에 태스크 보내기 (다른 터미널)
 ```bash
@@ -88,6 +87,31 @@ ros2 run rmf_demos_tasks dispatch_patrol -p pantry hardware_2 -n 3
 # 배달(delivery)
 ros2 run rmf_demos_tasks dispatch_delivery -p pantry -ph coke_dispenser -d hardware_2 -dh coke_ingestor
 ```
+
+---
+
+## src/rmf_demos 패키지 구조 (참고)
+
+`rmf_ws/src/rmf_demos`(클론한 데모 소스)는 여러 ROS 2 패키지로 구성됨:
+
+| 패키지 | 역할 |
+|---|---|
+| `rmf_demos` | 데모 **공통 launch + fleet/태스크 설정** (office.launch.xml 등의 베이스) |
+| `rmf_demos_gz` | **새 Gazebo(Harmonic)** 시뮬레이션 launch ← **우리가 쓰는 것** |
+| `rmf_demos_gz_classic` | Gazebo Classic용 launch (Jazzy에선 Classic이 EOL이라 **빌드 안 됨**) |
+| `rmf_demos_maps` | 데모 맵(`.building.yaml`) → world/nav graph 생성 |
+| `rmf_demos_assets` | 3D 모델 (로봇·가구·디스펜서 등) |
+| `rmf_demos_tasks` | 태스크 디스패치 스크립트 (`dispatch_patrol`/`delivery`/`clean`) |
+| `rmf_demos_fleet_adapter` | 데모 로봇용 fleet adapter + REST API fleet manager |
+| `rmf_demos_dashboard_resources` | rmf-web 대시보드 리소스 |
+| `rmf_demos_panel` | 웹 기반 태스크 제출 패널 |
+| `rmf_demos_bridges` | 통신 스택 간 브리지 노드 |
+| `docs/` | 추가 문서 (`faq.md`, `ignition.md`, `secure_office_world.md`) |
+
+> **브랜치 주의**: 클론한 건 **`jazzy` 브랜치**다. rmf_demos README엔
+> "Ubuntu 22.04 / ROS 2 Humble / Gazebo Fortress"라고 적혀 있지만, 그건 README 본문이
+> 갱신 안 된 것뿐이고 **`jazzy` 브랜치가 Jazzy + Gazebo Harmonic용**이라 정상 동작함
+> (실제로 빌드·실행 확인 완료).
 
 ---
 
