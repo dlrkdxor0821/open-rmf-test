@@ -10,6 +10,7 @@ Open-RMF(Robotics Middleware Framework) 연습용 저장소.
 
 ## 이 repo에 뭐가 들어있나
 - 이 README (셋업/실행/패키지 구조)
+- [`트러블슈팅.md`](./트러블슈팅.md) — 빌드/실행 중 겪은 문제와 해결법
 - `.gitignore`
 - ⚠️ `rmf_ws/` 는 **git에 안 올라감** (`.gitignore` 처리됨).
   남의 레포(rmf_demos)를 받아온 외부 소스 + colcon 빌드 산출물이라 재생성 가능 → 추적 안 함.
