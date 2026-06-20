@@ -91,6 +91,46 @@ ros2 run rmf_demos_tasks dispatch_delivery -p pantry -ph coke_dispenser -d hardw
 
 ---
 
+## 4. 직접 만든 맵을 Gazebo로 열기 (traffic_editor 맵 → world → Gazebo)
+
+`traffic_editor`로 그린 맵(`<이름>.building.yaml`)을 데모와 별개로 Gazebo에 직접 띄워보는 흐름.
+(아래 예시는 `asd.building.yaml` → `workspace.world` 기준)
+
+### 4-1. yaml → .world 변환
+```bash
+source /opt/ros/jazzy/setup.bash
+cd rmf_ws
+ros2 run rmf_building_map_tools building_map_generator gazebo \
+  asd.building.yaml \   # 입력: traffic_editor가 저장한 building yaml
+  workspace.world \     # 출력: Gazebo world 파일
+  .                     # 출력: 층 모델(asd_L1 등)을 생성할 폴더
+```
+- 인자 순서: `building_map_generator gazebo <입력.building.yaml> <출력.world> <모델출력폴더>`
+- 명령어 이름은 `building_map_generator` (gen**e**rator — 오타 주의).
+- 세 번째 `.` = 현재 폴더에 **`<건물명>_<층명>`** 모델 폴더(예: `asd_L1/`)를 만든다.
+  - 모델 이름은 파일명이 아니라 yaml 안의 `name:`(건물명) + 층 키(`L1`)에서 나온다.
+- world는 3D 형상을 직접 담지 않고 `model://asd_L1`로 그 폴더를 **참조**만 한다.
+
+### 4-2. .world → Gazebo 열기
+world가 참조하는 층 모델(`asd_L1`)과 가구 모델(`Sofa` 등)의 위치를
+`GZ_SIM_RESOURCE_PATH`로 알려줘야 한다 (⚠️ 안 하면 빈 화면 / `model not found` 경고).
+```bash
+source /opt/ros/jazzy/setup.bash
+export GZ_SIM_RESOURCE_PATH=$HOME/open-rmf-test/rmf_ws:$HOME/.gazebo/models
+gz sim ~/open-rmf-test/rmf_ws/workspace.world
+```
+- `$HOME/open-rmf-test/rmf_ws` → `asd_L1`을 찾는 경로 (모델 폴더의 **부모**를 넣는다)
+- `$HOME/.gazebo/models` → `Sofa` 같은 공용 가구 모델 경로
+
+> 매번 두 줄 치기 귀찮으면 스크립트로 묶어두면 된다 (예: `rmf_ws/open_world.sh` →
+> `bash rmf_ws/open_world.sh` 한 줄로 실행). `rmf_ws/`는 git에 안 올라가니 스크립트도 로컬용.
+
+> Classic 시절 `sudo cp -r 모델 /usr/share/gazebo-11/models` 방식은 **새 Gazebo(gz-sim)엔 안 통한다.**
+> 모델을 시스템에 복사하는 대신 위처럼 `GZ_SIM_RESOURCE_PATH`로 경로를 알려주거나,
+> `~/.gazebo/models/`(Gazebo가 기본으로 뒤지는 폴더)에 두면 된다.
+
+---
+
 ## src/rmf_demos 패키지 구조 (참고)
 
 `rmf_ws/src/rmf_demos`(클론한 데모 소스)는 여러 ROS 2 패키지로 구성됨:
